@@ -32,11 +32,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             className={`${geistSans.variable} ${cormorant.variable}`}
         >
             <body className="min-h-screen flex flex-col">
-                <a className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-surface focus:px-4 focus:py-3 focus:text-foreground focus:shadow-soft" href="#main-content">
+                <a
+                    className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-100 focus:rounded-md focus:bg-surface focus:px-4 focus:py-3 focus:text-foreground focus:shadow-soft"
+                    href="#main-content"
+                >
                     Skip to content
                 </a>
                 <Navbar />
-                <main className="flex-1" id="main-content">{children}</main>
+                <main className="flex-1" id="main-content">
+                    {children}
+                </main>
                 <Footer />
             </body>
         </html>

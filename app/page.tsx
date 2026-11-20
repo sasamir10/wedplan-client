@@ -1,7 +1,12 @@
+import type { Metadata } from "next";
+import { HomePage } from "./components/home/HomePage";
+
+export const metadata: Metadata = {
+    title: "Wedding Planning, Thoughtfully Together",
+    description:
+        "Discover wedding services, compare options and bring your celebration together with WedPlan.",
+};
+
 export default function Home() {
-    return (
-        <div className="flex flex-col flex-1 items-center justify-center bg-background font-sans">
-            <p>Welcome to my WedPlan project</p>
-        </div>
-    );
+    return <HomePage />;
 }

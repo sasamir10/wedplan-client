@@ -50,7 +50,9 @@ export function Navbar() {
                     className={navigationLinkClassName(isActive)}
                     href={href}
                     key={href}
-                    onClick={mobile ? () => setIsMobileMenuOpen(false) : undefined}
+                    onClick={
+                        mobile ? () => setIsMobileMenuOpen(false) : undefined
+                    }
                 >
                     {label}
                 </Link>
@@ -80,7 +82,10 @@ export function Navbar() {
                     </span>
                 </Link>
 
-                <nav aria-label="Main navigation" className="hidden items-center gap-1 lg:flex">
+                <nav
+                    aria-label="Main navigation"
+                    className="hidden items-center gap-1 lg:flex"
+                >
                     {renderNavigationLinks()}
                 </nav>
 
@@ -102,17 +107,36 @@ export function Navbar() {
                 <button
                     aria-controls="mobile-site-navigation"
                     aria-expanded={isMobileMenuOpen}
-                    aria-label={isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+                    aria-label={
+                        isMobileMenuOpen
+                            ? "Close navigation menu"
+                            : "Open navigation menu"
+                    }
                     className="grid size-11 place-items-center rounded-full border border-border text-foreground transition-colors hover:bg-surface-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus lg:hidden"
                     onClick={() => setIsMobileMenuOpen((isOpen) => !isOpen)}
                     ref={menuButtonRef}
                     type="button"
                 >
-                    <svg aria-hidden="true" className="size-5" fill="none" viewBox="0 0 24 24">
+                    <svg
+                        aria-hidden="true"
+                        className="size-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                    >
                         {isMobileMenuOpen ? (
-                            <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+                            <path
+                                d="m6 6 12 12M18 6 6 18"
+                                stroke="currentColor"
+                                strokeLinecap="round"
+                                strokeWidth="1.8"
+                            />
                         ) : (
-                            <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+                            <path
+                                d="M4 7h16M4 12h16M4 17h16"
+                                stroke="currentColor"
+                                strokeLinecap="round"
+                                strokeWidth="1.8"
+                            />
                         )}
                     </svg>
                 </button>
@@ -122,7 +146,10 @@ export function Navbar() {
                 className={`${isMobileMenuOpen ? "block" : "hidden"} border-t border-border bg-background lg:hidden`}
                 id="mobile-site-navigation"
             >
-                <nav aria-label="Mobile navigation" className="page-shell flex flex-col gap-2 py-5">
+                <nav
+                    aria-label="Mobile navigation"
+                    className="page-shell flex flex-col gap-2 py-5"
+                >
                     {renderNavigationLinks(true)}
                     <div className="mt-2 grid grid-cols-2 gap-3 border-t border-border pt-4">
                         <Link

@@ -24,8 +24,8 @@ export function Footer() {
                         </span>
                     </Link>
                     <p className="max-w-xs text-sm leading-6 text-muted">
-                        Thoughtful tools for finding your wedding team and bringing every detail
-                        of your celebration together.
+                        Thoughtful tools for finding your wedding team and
+                        bringing every detail of your celebration together.
                     </p>
                 </div>
 
@@ -34,9 +34,27 @@ export function Footer() {
                         Explore
                     </h2>
                     <ul className="space-y-3">
-                        <li><Link className={footerLinkClassName} href="/">Home</Link></li>
-                        <li><Link className={footerLinkClassName} href="/services">Browse Services</Link></li>
-                        <li><Link className={footerLinkClassName} href="/how-it-works">How It Works</Link></li>
+                        <li>
+                            <Link className={footerLinkClassName} href="/">
+                                Home
+                            </Link>
+                        </li>
+                        <li>
+                            <Link
+                                className={footerLinkClassName}
+                                href="/services"
+                            >
+                                Browse Services
+                            </Link>
+                        </li>
+                        <li>
+                            <Link
+                                className={footerLinkClassName}
+                                href="/how-it-works"
+                            >
+                                How It Works
+                            </Link>
+                        </li>
                     </ul>
                 </nav>
 
@@ -45,13 +63,37 @@ export function Footer() {
                         Your WedPlan
                     </h2>
                     <ul className="space-y-3">
-                        <li><Link className={footerLinkClassName} href="/sign-in">Sign In</Link></li>
-                        <li><Link className={footerLinkClassName} href="/get-started">Get Started</Link></li>
-                        <li><Link className={footerLinkClassName} href="/for-vendors">For Wedding Vendors</Link></li>
+                        <li>
+                            <Link
+                                className={footerLinkClassName}
+                                href="/sign-in"
+                            >
+                                Sign In
+                            </Link>
+                        </li>
+                        <li>
+                            <Link
+                                className={footerLinkClassName}
+                                href="/get-started"
+                            >
+                                Get Started
+                            </Link>
+                        </li>
+                        <li>
+                            <Link
+                                className={footerLinkClassName}
+                                href="/for-vendors"
+                            >
+                                For Wedding Vendors
+                            </Link>
+                        </li>
                     </ul>
                 </nav>
 
-                <section aria-labelledby="footer-contact-heading" className="space-y-4">
+                <section
+                    aria-labelledby="footer-contact-heading"
+                    className="space-y-4"
+                >
                     <h2
                         className="font-sans text-xs font-semibold uppercase tracking-widest text-foreground"
                         id="footer-contact-heading"
@@ -59,15 +101,18 @@ export function Footer() {
                         Contact
                     </h2>
                     <p className="max-w-xs text-sm leading-6 text-muted">
-                        For planning or vendor enquiries, please refer to the official WedPlan
-                        support information.
+                        For planning or vendor enquiries, please refer to the
+                        official WedPlan support information.
                     </p>
                 </section>
             </div>
 
             <div className="border-t border-border">
                 <div className="page-shell flex flex-col gap-2 py-5 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
-                    <p>Copyright (C) {new Date().getFullYear()} WedPlan. All rights reserved.</p>
+                    <p>
+                        Copyright (C) {new Date().getFullYear()} WedPlan. All
+                        rights reserved.
+                    </p>
                     <p>Made for the moments that matter.</p>
                 </div>
             </div>
