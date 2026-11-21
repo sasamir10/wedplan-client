@@ -5,6 +5,7 @@ import { authenticatedApiRequest } from "@/lib/authenticated-api";
 import {
     serviceCategories,
     uploadedServiceImageResponseSchema,
+    vendorServiceResponseEnvelopeSchema,
     vendorServiceSchema,
     type ServiceCategory,
 } from "@/lib/validations/service";
@@ -64,7 +65,7 @@ function uploadErrorMessage(status: number): string {
         return "Image uploads are available to vendor accounts.";
     if (status === 413) return "Each image must be 10 MB or smaller.";
     if (status === 415) return "Choose a JPG, PNG, or WebP image.";
-    if (status === 503) return "Image uploads are temporarily unavailable.";
+    if (status === 503) return "Image uploads are not configured on this server yet. Please contact WedPlan support.";
     if (status === 502 || status === 504) {
         return "The image service could not complete the upload. Please try again.";
     }
@@ -130,7 +131,9 @@ export function AddServiceForm() {
     const [notice, setNotice] = useState<Notice>(null);
     const [isUploading, setIsUploading] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isServiceSubmitted, setIsServiceSubmitted] = useState(false);
     const [activeUploadId, setActiveUploadId] = useState<string | null>(null);
+    const formRef = useRef<HTMLFormElement>(null);
     const uploadLock = useRef(false);
     const submitLock = useRef(false);
     const previewUrls = useRef(new Set<string>());
@@ -392,6 +395,22 @@ export function AddServiceForm() {
                 return;
             }
 
+            const payload: unknown = await response.json();
+            const createdService =
+                vendorServiceResponseEnvelopeSchema.safeParse(payload);
+            if (
+                !createdService.success ||
+                createdService.data.service.status !== "Pending"
+            ) {
+                setNotice({
+                    kind: "error",
+                    message:
+                        "The server response could not be verified. Please check My Services before trying again.",
+                });
+                return;
+            }
+
+            setIsServiceSubmitted(true);
             setNotice({
                 kind: "success",
                 message:
@@ -494,6 +513,7 @@ export function AddServiceForm() {
                         className="rounded-3xl border border-border bg-surface p-5 shadow-soft sm:p-8"
                         noValidate
                         onSubmit={handleSubmit}
+                        ref={formRef}
                     >
                         <div className="mb-7 border-b border-border pb-6">
                             <h2 className="font-heading text-3xl text-foreground">
@@ -942,13 +962,20 @@ export function AddServiceForm() {
                         </section>
 
                         <div className="mt-9 border-t border-border pt-6">
+                            <button
+                                aria-hidden="true"
+                                className="sr-only"
+                                tabIndex={-1}
+                                type="submit"
+                            >
+                                Submit service for review
+                            </button>
                             <Button
                                 className="w-full sm:w-auto sm:min-w-56"
-                                isDisabled={
-                                    isBusy || notice?.kind === "success"
-                                }
+                                isDisabled={isBusy || isServiceSubmitted}
+                                onPress={() => formRef.current?.requestSubmit()}
                                 size="lg"
-                                type="submit"
+                                type="button"
                                 variant="primary"
                             >
                                 {isSubmitting

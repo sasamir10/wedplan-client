@@ -387,8 +387,9 @@ function MyServicesContent() {
 
 export function MyServices() {
     return (
-        <ToastProvider placement="top end">
+        <>
             <MyServicesContent />
-        </ToastProvider>
+            <ToastProvider placement="top end" />
+        </>
     );
 }

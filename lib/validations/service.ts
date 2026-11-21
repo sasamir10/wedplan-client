@@ -9,6 +9,8 @@ export const serviceCategories = [
     "Wedding Fashion",
 ] as const;
 
+export const publicServiceSorts = ["default", "price-asc", "price-desc"] as const;
+
 export const serviceImageUrlSchema = z.url({ protocol: /^https?$/ });
 
 export const hostedServiceImageUrlSchema = z
@@ -89,6 +91,30 @@ export const vendorServiceResponseEnvelopeSchema = z.object({
     service: vendorServiceResponseSchema,
 });
 
+export const publicServiceResponseSchema = z.object({
+    id: z.string().min(1),
+    serviceName: z.string().min(1),
+    category: z.enum(serviceCategories),
+    description: z.string(),
+    price: z.number().finite().positive(),
+    location: z.string().min(1),
+    images: z.array(serviceImageUrlSchema),
+    vendor: z
+        .object({
+            name: z.string().nullable(),
+            businessName: z.string().nullable(),
+        })
+        .nullable(),
+    createdAt: z.iso.datetime(),
+});
+
+export const publicServicesResponseSchema = z.object({
+    success: z.literal(true),
+    services: z.array(publicServiceResponseSchema),
+});
+
 export type ServiceCategory = (typeof serviceCategories)[number];
+export type PublicServiceSort = (typeof publicServiceSorts)[number];
 export type VendorServicePayload = z.infer<typeof vendorServiceSchema>;
 export type VendorService = z.infer<typeof vendorServiceResponseSchema>;
+export type PublicService = z.infer<typeof publicServiceResponseSchema>;
