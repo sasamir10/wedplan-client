@@ -12,6 +12,7 @@ interface DashboardSidebarProps {
 const customerNavigationLinks = [
     { href: "/customer", label: "Overview" },
     { href: "/customer/bookings", label: "My Bookings" },
+    { href: "/customer/profile", label: "Profile Settings" },
 ];
 
 const vendorNavigationLinks = [
@@ -19,6 +20,7 @@ const vendorNavigationLinks = [
     { href: "/vendor/services", label: "My Services" },
     { href: "/vendor/services/new", label: "Add Service" },
     { href: "/vendor/bookings", label: "Booking Requests" },
+    { href: "/vendor/profile", label: "Profile Settings" },
 ];
 
 const adminNavigationLinks = [
