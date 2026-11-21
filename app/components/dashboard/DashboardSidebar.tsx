@@ -25,6 +25,7 @@ const vendorNavigationLinks = [
 
 const adminNavigationLinks = [
     { href: "/admin", label: "Overview" },
+    { href: "/admin/users", label: "Manage Users" },
     { href: "/admin/services", label: "Manage Services" },
 ];
 
