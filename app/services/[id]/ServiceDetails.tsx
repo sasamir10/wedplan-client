@@ -11,6 +11,7 @@ import {
     publicServiceDetailResponseSchema,
     type PublicServiceDetail,
 } from "@/lib/validations/service";
+import { BookingForm } from "./BookingForm";
 
 const priceFormatter = new Intl.NumberFormat("en-BD", {
     style: "currency",
@@ -645,7 +646,11 @@ export function ServiceDetails({ serviceId }: { serviceId: string }) {
                 </div>
 
                 <aside className="space-y-6 lg:sticky lg:top-24">
-                    <BookingPanel isOwner={service.isOwner} role={role} />
+                    {role === "customer" ? (
+                        <BookingForm serviceId={serviceId} />
+                    ) : (
+                        <BookingPanel isOwner={service.isOwner} role={role} />
+                    )}
 
                     <section
                         aria-labelledby="service-facts-heading"
