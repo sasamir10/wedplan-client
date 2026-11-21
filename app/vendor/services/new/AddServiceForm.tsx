@@ -395,10 +395,10 @@ export function AddServiceForm() {
             setNotice({
                 kind: "success",
                 message:
-                    "Your service was submitted and is now awaiting WedPlan review. Returning to the home page shortly.",
+                    "Your service was submitted and is now awaiting WedPlan review. Returning to My Services shortly.",
             });
             redirectTimer.current = window.setTimeout(() => {
-                router.replace("/");
+                router.replace("/vendor/services");
             }, 1800);
         } catch {
             setNotice({
@@ -473,6 +473,12 @@ export function AddServiceForm() {
                     <h1 className="font-heading text-4xl font-medium leading-tight text-foreground sm:text-5xl lg:text-6xl">
                         Add your wedding service
                     </h1>
+                    <Link
+                        className="mt-4 inline-flex text-sm font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus"
+                        href="/vendor/services"
+                    >
+                        View My Services
+                    </Link>
                     <p className="mt-4 max-w-2xl text-sm leading-7 text-muted sm:text-base">
                         Tell couples what you offer, where you work, and what
                         they can expect. Your new listing will be sent for
