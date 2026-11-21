@@ -113,8 +113,18 @@ export const publicServicesResponseSchema = z.object({
     services: z.array(publicServiceResponseSchema),
 });
 
+export const publicServiceDetailResponseSchema = z.object({
+    success: z.literal(true),
+    service: publicServiceResponseSchema.extend({
+        isOwner: z.boolean(),
+    }),
+});
+
 export type ServiceCategory = (typeof serviceCategories)[number];
 export type PublicServiceSort = (typeof publicServiceSorts)[number];
 export type VendorServicePayload = z.infer<typeof vendorServiceSchema>;
 export type VendorService = z.infer<typeof vendorServiceResponseSchema>;
 export type PublicService = z.infer<typeof publicServiceResponseSchema>;
+export type PublicServiceDetail = z.infer<
+    typeof publicServiceDetailResponseSchema
+>["service"];
