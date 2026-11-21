@@ -74,11 +74,31 @@ function uploadErrorMessage(status: number): string {
     return "The image could not be uploaded. Please try again.";
 }
 
-function serviceErrorMessage(status: number): string {
+function readServiceErrorCode(payload: unknown): string | undefined {
+    if (typeof payload !== "object" || payload === null) return undefined;
+    const error = (payload as { error?: unknown }).error;
+    if (typeof error !== "object" || error === null) return undefined;
+    const code = (error as { code?: unknown }).code;
+    return typeof code === "string" ? code : undefined;
+}
+
+function serviceErrorMessage(status: number, code?: string): string {
     if (status === 401)
         return "Your session has expired. Sign in and try again.";
-    if (status === 403) return "Only vendor accounts can add services.";
+    if (status === 403) {
+        if (code === "ROLE_FORBIDDEN")
+            return "Only vendor accounts can add services.";
+        if (code === "VENDOR_NOT_FOUND")
+            return "We couldn't find your vendor account. Please sign in again or contact WedPlan support.";
+        if (code === "VENDOR_ACCOUNT_UNAVAILABLE")
+            return "We couldn't confirm your vendor account. Please sign in again or contact WedPlan support.";
+        if (code === "SUBSCRIPTION_UNVERIFIED")
+            return "We couldn't verify your subscription plan. Please contact WedPlan support.";
+        return "This account isn't allowed to add services right now. Please contact WedPlan support if this continues.";
+    }
     if (status === 409) {
+        if (code === "FREE_PLAN_LIMIT_REACHED")
+            return "Your Free plan allows up to 3 active services. Deactivate a service or upgrade to add another.";
         return "Your current plan has reached its active service limit.";
     }
     if (status === 503)
@@ -388,9 +408,15 @@ export function AddServiceForm() {
             );
 
             if (!response.ok) {
+                let errorCode: string | undefined;
+                try {
+                    errorCode = readServiceErrorCode(await response.json());
+                } catch {
+                    errorCode = undefined;
+                }
                 setNotice({
                     kind: "error",
-                    message: serviceErrorMessage(response.status),
+                    message: serviceErrorMessage(response.status, errorCode),
                 });
                 return;
             }

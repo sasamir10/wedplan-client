@@ -420,9 +420,11 @@ function EditServiceFormContent({ serviceId }: { serviceId: string }) {
 }
 
 export function EditServiceForm({ serviceId }: { serviceId: string }) {
+    // HeroUI's ToastProvider renders a toast region, not page children.
     return (
-        <ToastProvider placement="top end">
+        <>
             <EditServiceFormContent serviceId={serviceId} />
-        </ToastProvider>
+            <ToastProvider placement="top end" />
+        </>
     );
 }

@@ -540,9 +540,11 @@ function AdminServicesContent() {
 }
 
 export function AdminServices() {
+    // HeroUI's ToastProvider renders a toast region, not page children.
     return (
-        <ToastProvider placement="top end">
+        <>
             <AdminServicesContent />
-        </ToastProvider>
+            <ToastProvider placement="top end" />
+        </>
     );
 }
