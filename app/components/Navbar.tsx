@@ -3,11 +3,20 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { authClient } from "@/lib/auth-client";
 
-const navigationLinks = [
+const publicNavigationLinks = [
     { href: "/", label: "Home" },
     { href: "/services", label: "Browse Services" },
     { href: "/how-it-works", label: "How It Works" },
+];
+
+const customerNavigationLinks = [
+    { href: "/customer/bookings", label: "My Bookings" },
+];
+
+const vendorNavigationLinks = [
+    { href: "/vendor/bookings", label: "Booking Requests" },
 ];
 
 function navigationLinkClassName(isActive: boolean): string {
@@ -23,6 +32,10 @@ export function Navbar() {
     const pathname = usePathname();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const menuButtonRef = useRef<HTMLButtonElement>(null);
+    const {
+        data: sessionData,
+    } = authClient.useSession();
+    const role = sessionData?.user?.role;
 
     useEffect(() => {
         if (!isMobileMenuOpen) {
@@ -41,11 +54,19 @@ export function Navbar() {
     }, [isMobileMenuOpen]);
 
     function renderNavigationLinks(mobile = false) {
-        return navigationLinks.map(({ href, label }) => {
-            const isActive = pathname === href;
+        const roleLinks =
+            role === "customer"
+                ? customerNavigationLinks
+                : role === "vendor"
+                  ? vendorNavigationLinks
+                  : [];
 
-            return (
-                <Link
+        return [...publicNavigationLinks, ...roleLinks].map(
+            ({ href, label }) => {
+                const isActive = pathname === href;
+
+                return (
+                    <Link
                     aria-current={isActive ? "page" : undefined}
                     className={navigationLinkClassName(isActive)}
                     href={href}
