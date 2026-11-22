@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { Button, ToastProvider, toast } from "@heroui/react";
 import { authClient } from "@/lib/auth-client";
 
 const publicNavigationLinks = [
@@ -30,13 +31,16 @@ function navigationLinkClassName(isActive: boolean): string {
 
 export function Navbar() {
     const pathname = usePathname();
+    const router = useRouter();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
     const menuButtonRef = useRef<HTMLButtonElement>(null);
     const {
         data: sessionData,
         isPending: isSessionPending,
     } = authClient.useSession();
     const role = sessionData?.user?.role;
+    const isAuthenticated = Boolean(sessionData?.user);
 
     useEffect(() => {
         if (!isMobileMenuOpen) {
@@ -54,6 +58,31 @@ export function Navbar() {
         return () => document.removeEventListener("keydown", handleKeyDown);
     }, [isMobileMenuOpen]);
 
+    async function handleSignOut() {
+        if (isLoggingOut) {
+            return;
+        }
+
+        setIsLoggingOut(true);
+
+        try {
+            const response = await authClient.signOut();
+
+            if (response.error) {
+                toast.danger("Unable to sign out. Please try again.");
+                return;
+            }
+
+            toast.success("You have been signed out successfully.");
+            router.replace("/");
+        } catch {
+            toast.danger("Unable to sign out. Please try again.");
+        } finally {
+            setIsLoggingOut(false);
+            setIsMobileMenuOpen(false);
+        }
+    }
+
     function renderNavigationLinks(mobile = false) {
         const roleLinks =
             role === "customer"
@@ -68,18 +97,19 @@ export function Navbar() {
 
                 return (
                     <Link
-                    aria-current={isActive ? "page" : undefined}
-                    className={navigationLinkClassName(isActive)}
-                    href={href}
-                    key={href}
-                    onClick={
-                        mobile ? () => setIsMobileMenuOpen(false) : undefined
-                    }
-                >
-                    {label}
-                </Link>
-            );
-        });
+                        aria-current={isActive ? "page" : undefined}
+                        className={navigationLinkClassName(isActive)}
+                        href={href}
+                        key={href}
+                        onClick={
+                            mobile ? () => setIsMobileMenuOpen(false) : undefined
+                        }
+                    >
+                        {label}
+                    </Link>
+                );
+            }
+        );
     }
 
     const actionLinkClassName =
@@ -112,7 +142,18 @@ export function Navbar() {
                 </nav>
 
                 <div className="hidden shrink-0 items-center gap-3 lg:flex">
-                    {!role && !isSessionPending && (
+                    {isAuthenticated && !isSessionPending ? (
+                        <Button
+                            onClick={handleSignOut}
+                            isDisabled={isLoggingOut}
+                            isPending={isLoggingOut}
+                            size="sm"
+                            variant="outline"
+                            className={actionLinkClassName}
+                        >
+                            {isLoggingOut ? "Signing out…" : "Logout"}
+                        </Button>
+                    ) : (
                         <>
                             <Link
                                 className={`${actionLinkClassName} text-foreground hover:bg-surface-secondary`}
@@ -168,6 +209,8 @@ export function Navbar() {
                 </button>
             </div>
 
+            <ToastProvider placement="top end" />
+
             <div
                 className={`${isMobileMenuOpen ? "block" : "hidden"} border-t border-border bg-background lg:hidden`}
                 id="mobile-site-navigation"
@@ -178,7 +221,15 @@ export function Navbar() {
                 >
                     {renderNavigationLinks(true)}
                     <div className="mt-2 grid grid-cols-2 gap-3 border-t border-border pt-4">
-                        {!role && !isSessionPending && (
+                        {isAuthenticated && !isSessionPending ? (
+                            <button
+                                onClick={handleSignOut}
+                                disabled={isLoggingOut}
+                                className={`${actionLinkClassName} border border-border text-foreground hover:bg-surface-secondary col-span-2`}
+                            >
+                                {isLoggingOut ? "Signing out…" : "Logout"}
+                            </button>
+                        ) : (
                             <>
                                 <Link
                                     className={`${actionLinkClassName} border border-border text-foreground hover:bg-surface-secondary`}
