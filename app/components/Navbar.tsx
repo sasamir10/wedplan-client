@@ -34,6 +34,7 @@ export function Navbar() {
     const menuButtonRef = useRef<HTMLButtonElement>(null);
     const {
         data: sessionData,
+        isPending: isSessionPending,
     } = authClient.useSession();
     const role = sessionData?.user?.role;
 
@@ -111,18 +112,22 @@ export function Navbar() {
                 </nav>
 
                 <div className="hidden shrink-0 items-center gap-3 lg:flex">
-                    <Link
-                        className={`${actionLinkClassName} text-foreground hover:bg-surface-secondary`}
-                        href="/sign-in"
-                    >
-                        Sign In
-                    </Link>
-                    <Link
-                        className={`${actionLinkClassName} bg-primary text-primary-foreground shadow-soft hover:bg-accent/90`}
-                        href="/get-started"
-                    >
-                        Get Started
-                    </Link>
+                    {!role && !isSessionPending && (
+                        <>
+                            <Link
+                                className={`${actionLinkClassName} text-foreground hover:bg-surface-secondary`}
+                                href="/sign-in"
+                            >
+                                Sign In
+                            </Link>
+                            <Link
+                                className={`${actionLinkClassName} bg-primary text-primary-foreground shadow-soft hover:bg-accent/90`}
+                                href="/get-started"
+                            >
+                                Get Started
+                            </Link>
+                        </>
+                    )}
                 </div>
 
                 <button
@@ -173,20 +178,24 @@ export function Navbar() {
                 >
                     {renderNavigationLinks(true)}
                     <div className="mt-2 grid grid-cols-2 gap-3 border-t border-border pt-4">
-                        <Link
-                            className={`${actionLinkClassName} border border-border text-foreground hover:bg-surface-secondary`}
-                            href="/sign-in"
-                            onClick={() => setIsMobileMenuOpen(false)}
-                        >
-                            Sign In
-                        </Link>
-                        <Link
-                            className={`${actionLinkClassName} bg-primary text-primary-foreground shadow-soft hover:bg-accent/90`}
-                            href="/get-started"
-                            onClick={() => setIsMobileMenuOpen(false)}
-                        >
-                            Get Started
-                        </Link>
+                        {!role && !isSessionPending && (
+                            <>
+                                <Link
+                                    className={`${actionLinkClassName} border border-border text-foreground hover:bg-surface-secondary`}
+                                    href="/sign-in"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                >
+                                    Sign In
+                                </Link>
+                                <Link
+                                    className={`${actionLinkClassName} bg-primary text-primary-foreground shadow-soft hover:bg-accent/90`}
+                                    href="/get-started"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                >
+                                    Get Started
+                                </Link>
+                            </>
+                        )}
                     </div>
                 </nav>
             </div>
