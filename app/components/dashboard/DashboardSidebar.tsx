@@ -20,6 +20,7 @@ const vendorNavigationLinks = [
     { href: "/vendor/services", label: "My Services" },
     { href: "/vendor/services/new", label: "Add Service" },
     { href: "/vendor/bookings", label: "Booking Requests" },
+    { href: "/vendor/subscription/upgrade", label: "Subscription" },
     { href: "/vendor/profile", label: "Profile Settings" },
 ];
 

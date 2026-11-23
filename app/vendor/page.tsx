@@ -13,6 +13,10 @@ interface VendorStats {
   pendingBookingRequests: number;
   acceptedBookings: number;
   subscriptionPlan: string;
+  subscriptionStatus: string | null;
+  subscriptionCancelAtPeriodEnd: boolean;
+  subscriptionCurrentPeriodEnd: string | null;
+  hasActiveSubscription: boolean;
 }
 
 interface StatsResponse {
@@ -34,6 +38,33 @@ const statDescriptionClassName =
 
 function planLabel(plan: string): string {
   return plan.charAt(0).toUpperCase() + plan.slice(1);
+}
+
+function formatBillingDate(value: string | null): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    dateStyle: "medium",
+  }).format(date);
+}
+
+function subscriptionStatusLabel(status: string | null): string {
+  if (!status) {
+    return "Active";
+  }
+
+  return status
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
 }
 
 export default function VendorDashboardPage() {
@@ -234,13 +265,51 @@ export default function VendorDashboardPage() {
                 (stats?.subscriptionPlan ?? "free") === "premium";
 
               if (isPremiumPlan) {
+                const cancelScheduled =
+                  stats?.subscriptionCancelAtPeriodEnd === true;
+                const billingPeriodEnd = formatBillingDate(
+                  stats?.subscriptionCurrentPeriodEnd ?? null,
+                );
+                const statusLabel = cancelScheduled
+                  ? "Cancellation scheduled"
+                  : subscriptionStatusLabel(
+                      stats?.subscriptionStatus ?? null,
+                    );
+
                 return (
                   <section key={card.label} className={cardClasses}>
-                    <p className={statLabelClassName}>{card.label}</p>
-                    <p className={`${statValueClassName} mt-1 text-primary font-semibold`}>
-                      Premium
-                    </p>
-                    <p className="mt-1 text-xs text-muted">Current plan</p>
+                    <div className="flex h-full flex-col p-8">
+                      <p className={statLabelClassName}>{card.label}</p>
+                      <p
+                        className={`${statValueClassName} mt-1 text-primary font-semibold`}
+                      >
+                        Premium
+                      </p>
+                      <p className="mt-1 text-xs font-medium text-foreground">
+                        {statusLabel}
+                      </p>
+                      <p className="mt-2 text-xs leading-5 text-muted">
+                        {cancelScheduled
+                          ? billingPeriodEnd
+                            ? `Premium access continues until ${billingPeriodEnd}.`
+                            : "Premium access continues until the end of the current billing period."
+                          : billingPeriodEnd
+                            ? `Current period ends ${billingPeriodEnd}.`
+                            : "Billing period details are syncing."}
+                      </p>
+                      <div className="mt-auto border-t border-border pt-4">
+                        <Button
+                          className="w-full"
+                          onPress={() =>
+                            router.push("/vendor/subscription/upgrade")
+                          }
+                          variant="outline"
+                          size="sm"
+                        >
+                          Manage Subscription
+                        </Button>
+                      </div>
+                    </div>
                   </section>
                 );
               }
