@@ -230,14 +230,44 @@ export default function VendorDashboardPage() {
               .join(" ");
 
             if (isSubscription) {
+              const isPremiumPlan =
+                (stats?.subscriptionPlan ?? "free") === "premium";
+
+              if (isPremiumPlan) {
+                return (
+                  <section key={card.label} className={cardClasses}>
+                    <p className={statLabelClassName}>{card.label}</p>
+                    <p className={`${statValueClassName} mt-1 text-primary font-semibold`}>
+                      Premium
+                    </p>
+                    <p className="mt-1 text-xs text-muted">Current plan</p>
+                  </section>
+                );
+              }
+
               return (
-                <section key={card.label} className={cardClasses}>
-                  <p className={statLabelClassName}>{card.label}</p>
-                  <p className={`${statValueClassName} mt-1 text-primary font-semibold`}>
-                    {card.displayValue}
-                  </p>
-                  <p className="mt-1 text-xs text-muted">Current plan</p>
-                </section>
+                <Link
+                  key={card.label}
+                  className={cardClasses}
+                  href="/vendor/subscription/upgrade"
+                >
+                  <div className="flex flex-col h-full">
+                    <p className={statLabelClassName}>{card.label}</p>
+                    <p className={`${statValueClassName} mt-1`}>Free</p>
+                    <div className="mt-auto border-t border-border pt-4">
+                      <Button
+                        className="w-full"
+                        onPress={() =>
+                          router.push("/vendor/subscription/upgrade")
+                        }
+                        variant="primary"
+                        size="sm"
+                      >
+                        Upgrade to Premium
+                      </Button>
+                    </div>
+                  </div>
+                </Link>
               );
             }
 
