@@ -82,7 +82,7 @@ export function DashboardLayout({ children, role }: DashboardLayoutProps) {
                 onClose={() => setIsMobileMenuOpen(false)}
             />
 
-            <div className="flex-1 flex flex-col lg:pl-64">
+            <div className="flex-1 flex flex-col">
                 <header className="flex h-16 items-center justify-between border-b border-border bg-surface/95 backdrop-blur-md px-5 lg:px-0">
                     <DashboardMobileMenuButton
                         isOpen={isMobileMenuOpen}

@@ -64,25 +64,10 @@ export function DashboardSidebar({
                 className={`fixed inset-y-0 left-0 z-40 w-64 border-r border-border bg-surface transform transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0 lg:relative lg:static lg:inset-0 lg:auto lg:border-0 lg:flex lg:flex-col`}
             >
             <div className="flex h-full flex-col lg:flex-1">
-                <div className="flex h-16 items-center justify-between gap-6 border-b border-border bg-surface px-5">
-                    <Link
-                        aria-label="WedPlan home"
-                        className="group inline-flex shrink-0 items-center gap-2 rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus"
-                        href="/"
-                    >
-                        <span
-                            aria-hidden="true"
-                            className="grid size-8 place-items-center rounded-full border border-secondary text-lg text-primary"
-                        >
-                            <span className="font-heading">W</span>
-                        </span>
-                        <span className="font-heading text-xl font-semibold tracking-tight text-foreground">
-                            WedPlan
-                        </span>
-                    </Link>
+                <div className="flex h-16 items-center justify-between border-b border-border bg-surface px-5 lg:hidden">
                     <button
                         aria-label="Close navigation menu"
-                        className="lg:hidden size-8 rounded-full border border-border text-foreground hover:bg-surface-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                        className="size-8 rounded-full border border-border text-foreground hover:bg-surface-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                         onClick={onToggleMobileMenu}
                     >
                         <svg
@@ -101,7 +86,6 @@ export function DashboardSidebar({
                         </svg>
                     </button>
                 </div>
-
                 <nav className="flex-1 px-4 py-5 space-y-1">
                     {links.map(({ href, label }) => {
                         const isActive = pathname === href;

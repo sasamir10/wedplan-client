@@ -164,16 +164,27 @@ export default function VendorDashboardPage() {
       </section>
 
       {isLoading ? (
-        <section className="space-y-5" role="status" aria-busy="true">
+        <section
+          className={`
+            grid
+            gap-4
+            sm:grid-cols-2
+            sm:gap-6
+            lg:grid-cols-6
+            lg:gap-6
+          `}
+          role="status"
+          aria-busy="true"
+        >
           {statsCards.map((_, index) => (
             <div
               key={index}
-              className={`${cardClassName} h-32 flex items-center px-8 py-6`}
+              className={`${cardClassName} flex flex-col h-full p-6`}
             >
-              <div className="h-52 animate-pulse rounded-3xl bg-surface-secondary" />
-              <div className="ml-6 space-y-2">
-                <div className="h-4 animate-pulse rounded-full bg-surface-secondary" />
-                <div className="h-4 animate-pulse rounded-full bg-surface-secondary w-3/4" />
+              <div className="h-4 animate-pulse rounded-full bg-surface-secondary" />
+              <div className="mt-2 h-10 animate-pulse rounded-full bg-surface-secondary w-3/4" />
+              <div className="mt-auto border-t border-border pt-4">
+                <div className="h-9 w-24 animate-pulse rounded-full bg-surface-secondary" />
               </div>
             </div>
           ))}
@@ -189,36 +200,70 @@ export default function VendorDashboardPage() {
           </Button>
         </section>
       ) : (
-        <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-          {statsCards.map((card) => (
-            <Link
-              key={card.label}
-              className={cardClassName}
-              href={card.href}
-            >
-              <div className="p-8">
-                <p className={statLabelClassName}>{card.label}</p>
-                {card.displayValue ? (
-                  <p className={statValueClassName}>{card.displayValue}</p>
-                ) : (
-                  <p className={statValueClassName}>{card.value}</p>
-                )}
-                <p className={statDescriptionClassName}>
-                  {stats === null ? "–" : ""}
-                </p>
-              </div>
-              <div className="border-t border-border pt-6 px-8">
-                <Button
-                  className="w-full"
-                  onPress={() => router.push(card.href)}
-                  variant="outline"
-                  size="sm"
-                >
-                  {card.actionLabel}
-                </Button>
-              </div>
-            </Link>
-          ))}
+        <section
+          className={`
+            grid
+            gap-4
+            sm:grid-cols-2
+            sm:gap-6
+            lg:grid-cols-6
+            lg:gap-6
+          `}
+        >
+          {statsCards.map((card, index) => {
+            const isSubscription = card.label === "Subscription Plan";
+
+            // Desktop: each card spans 2 columns.
+            // Row 1 (cards 0-2) auto-fills; Row 2 (cards 3-4) centered
+            // via explicit column starts in the 6-column grid.
+            let columnStart = "";
+            if (index === 3) columnStart = "lg:col-start-2";
+            if (index === 4) columnStart = "lg:col-start-4";
+
+            const cardClasses = [
+              cardClassName,
+              "flex flex-col h-full p-6",
+              "lg:col-span-2",
+              columnStart,
+            ]
+              .filter(Boolean)
+              .join(" ");
+
+            if (isSubscription) {
+              return (
+                <section key={card.label} className={cardClasses}>
+                  <p className={statLabelClassName}>{card.label}</p>
+                  <p className={`${statValueClassName} mt-1 text-primary font-semibold`}>
+                    {card.displayValue}
+                  </p>
+                  <p className="mt-1 text-xs text-muted">Current plan</p>
+                </section>
+              );
+            }
+
+            return (
+              <Link
+                key={card.label}
+                className={cardClasses}
+                href={card.href}
+              >
+                <div className="flex flex-col h-full">
+                  <p className={statLabelClassName}>{card.label}</p>
+                  <p className={`${statValueClassName} mt-1`}>{card.value}</p>
+                  <div className="mt-auto border-t border-border pt-4">
+                    <Button
+                      className="w-full"
+                      onPress={() => router.push(card.href)}
+                      variant="outline"
+                      size="sm"
+                    >
+                      {card.actionLabel}
+                    </Button>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
         </section>
       )}
 
