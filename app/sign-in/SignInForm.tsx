@@ -1,10 +1,12 @@
 "use client";
 
 import { authClient } from "@/lib/auth-client";
+import { dashboardPathForRole } from "@/lib/auth-navigation";
 import { loginSchema, type LoginInput } from "@/lib/validations/auth";
+import { Button, toast } from "@heroui/react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useRef, useState, type FormEvent } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 
 type LoginErrors = Partial<Record<keyof LoginInput, string>>;
 type BetterAuthError = {
@@ -50,12 +52,34 @@ function getSafeGoogleError(error: BetterAuthError): string {
 
 export function SignInForm() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const registeredNotice = searchParams.get("registered") === "1"
+        ? "Your account was created. Sign in to continue."
+        : "";
+    const {
+        data: currentSession,
+        isPending: isSessionPending,
+        error: sessionError,
+    } = authClient.useSession();
     const [formData, setFormData] = useState<LoginInput>(initialFormData);
     const [errors, setErrors] = useState<LoginErrors>({});
     const [formError, setFormError] = useState("");
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const [activeAttempt, setActiveAttempt] = useState<"email" | "google" | null>(null);
     const attemptLock = useRef(false);
+
+    useEffect(() => {
+        if (isSessionPending || sessionError || !currentSession?.user) return;
+
+        const destination = dashboardPathForRole(currentSession.user.role);
+        if (destination) {
+            if (searchParams.get("auth") === "callback") {
+                toast.success("You’re signed in to WedPlan.");
+            }
+            router.replace(destination);
+            router.refresh();
+        }
+    }, [currentSession?.user, isSessionPending, router, searchParams, sessionError]);
 
     function updateField<K extends keyof LoginInput>(field: K, value: LoginInput[K]) {
         setFormData((previous) => ({ ...previous, [field]: value }));
@@ -104,13 +128,21 @@ export function SignInForm() {
             if (
                 sessionResponse.error ||
                 !sessionResponse.data?.session ||
-                !sessionResponse.data.user
+                !sessionResponse.data.user ||
+                sessionResponse.data.user.id !== response.data.user.id
             ) {
                 setFormError("We couldn't confirm your sign-in session. Please try again.");
                 return;
             }
 
-            router.replace("/");
+            const destination = dashboardPathForRole(sessionResponse.data.user.role);
+            if (!destination) {
+                setFormError("Your account role could not be verified. Please contact WedPlan support.");
+                return;
+            }
+
+            toast.success("You’re signed in to WedPlan.");
+            router.replace(destination);
             router.refresh();
         } catch {
             setFormError("Sign-in is temporarily unavailable. Check your connection and try again.");
@@ -128,7 +160,7 @@ export function SignInForm() {
         setFormError("");
 
         try {
-            const callbackURL = new URL("/", window.location.origin).toString();
+            const callbackURL = new URL("/sign-in?auth=callback", window.location.origin).toString();
             const response = await authClient.signIn.social({
                 provider: "google",
                 callbackURL,
@@ -173,7 +205,7 @@ export function SignInForm() {
                     </p>
                 </div>
 
-                <form className="space-y-5" onSubmit={handleEmailSignIn} noValidate aria-busy={activeAttempt !== null}>
+                <form className="space-y-5" onSubmit={handleEmailSignIn} noValidate aria-busy={activeAttempt !== null || isSessionPending}>
                     <div>
                         <label htmlFor="email" className="mb-2 block text-sm font-medium text-foreground">
                             Email Address
@@ -251,9 +283,15 @@ export function SignInForm() {
                         </p>
                     )}
 
+                    {registeredNotice && (
+                        <p className="rounded-xl bg-surface-secondary p-3 text-sm text-foreground" role="status" aria-live="polite">
+                            {registeredNotice}
+                        </p>
+                    )}
+
                     <button
                         type="submit"
-                        disabled={activeAttempt !== null}
+                        disabled={activeAttempt !== null || isSessionPending || Boolean(currentSession?.user)}
                         className="w-full rounded-xl bg-primary px-5 py-3.5 text-sm font-medium text-primary-foreground transition hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-70"
                     >
                         {activeAttempt === "email" ? "Signing in..." : "Sign In"}
@@ -266,11 +304,12 @@ export function SignInForm() {
                     <span className="h-px flex-1 bg-border" />
                 </div>
 
-                <button
+                <Button
                     type="button"
                     onClick={handleGoogleSignIn}
-                    disabled={activeAttempt !== null}
-                    className="flex w-full items-center justify-center gap-3 rounded-xl border border-border bg-surface px-5 py-3.5 text-sm font-medium text-foreground transition hover:bg-surface-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-70"
+                    isDisabled={activeAttempt !== null || isSessionPending || Boolean(currentSession?.user)}
+                    variant="outline"
+                    className="flex w-full items-center justify-center gap-3 rounded-xl border border-border bg-surface px-5 py-3.5 text-sm font-medium text-foreground transition hover:bg-surface-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 >
                     <svg aria-hidden="true" viewBox="0 0 48 48" className="size-5">
                         <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5Z" />
@@ -279,7 +318,7 @@ export function SignInForm() {
                         <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.9-5.8l-7.73-6c-2.14 1.45-4.88 2.3-8.17 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48Z" />
                     </svg>
                     {activeAttempt === "google" ? "Connecting to Google..." : "Continue with Google"}
-                </button>
+                </Button>
 
                 <p className="mt-7 text-center text-sm text-muted">
                     New to WedPlan?{" "}

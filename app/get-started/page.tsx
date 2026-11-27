@@ -5,7 +5,10 @@ import {
     type RegistrationInput,
 } from "@/lib/validations/auth";
 import { authClient } from "@/lib/auth-client";
+import { dashboardPathForRole } from "@/lib/auth-navigation";
+import { toast } from "@heroui/react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useRef, useState, type FormEvent } from "react";
 
 const initialFormData: RegistrationInput = {
@@ -17,7 +20,6 @@ const initialFormData: RegistrationInput = {
     businessName: "",
 };
 
-type RegistrationRole = "customer" | "vendor";
 type RegistrationErrors = Partial<Record<keyof RegistrationInput, string>>;
 type BetterAuthError = {
     code?: string;
@@ -83,6 +85,7 @@ function getSafeSignupError(error: BetterAuthError): {
 }
 
 export default function GetStartedPage() {
+    const router = useRouter();
     const [formData, setFormData] =
         useState<RegistrationInput>(initialFormData);
     const [errors, setErrors] = useState<RegistrationErrors>({});
@@ -91,10 +94,6 @@ export default function GetStartedPage() {
         null,
     );
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [createdRole, setCreatedRole] = useState<RegistrationRole | null>(
-        null,
-    );
-    const [hasActiveSession, setHasActiveSession] = useState(false);
     const submissionLock = useRef(false);
 
     function updateField<K extends keyof RegistrationInput>(
@@ -113,8 +112,6 @@ export default function GetStartedPage() {
 
         setStatusMessage("");
         setStatusKind(null);
-        setCreatedRole(null);
-        setHasActiveSession(false);
     }
 
     function showSignupError(error: BetterAuthError) {
@@ -191,38 +188,35 @@ export default function GetStartedPage() {
             }
 
             let authenticatedUser: typeof createdUser | null = null;
-
-            if (signupResult.data.token) {
-                try {
-                    const sessionResult = await authClient.getSession();
-                    authenticatedUser = sessionResult.data?.user ?? null;
-                } catch {
-                    // Account creation may succeed even when the session check is unavailable.
+            try {
+                const sessionResult = await authClient.getSession();
+                const sessionUser = sessionResult.data?.user;
+                if (
+                    !sessionResult.error &&
+                    sessionResult.data?.session &&
+                    sessionUser?.id === createdUser.id
+                ) {
+                    authenticatedUser = sessionUser;
                 }
+            } catch {
+                // Account creation can succeed even if session retrieval is temporarily unavailable.
             }
 
-            const actualUser = authenticatedUser ?? createdUser;
-            const actualRole =
-                actualUser.role === "customer" || actualUser.role === "vendor"
-                    ? actualUser.role
-                    : null;
+            const destination = authenticatedUser
+                ? dashboardPathForRole(authenticatedUser.role)
+                : null;
 
-            setCreatedRole(actualRole);
-            setHasActiveSession(Boolean(authenticatedUser && actualRole));
-            setStatusKind("success");
-
-            if (!actualRole) {
-                setStatusMessage(
-                    "Your WedPlan account has been created. You can sign in to continue.",
-                );
+            if (destination && (destination === "/customer" || destination === "/vendor")) {
+                toast.success("Your account is ready. Welcome to WedPlan.");
+                router.replace(destination);
+                router.refresh();
                 return;
             }
 
-            setStatusMessage(
-                authenticatedUser
-                    ? "Your " + actualRole + " account is ready, and you're signed in."
-                    : "Your " + actualRole + " account has been created. Sign in to continue.",
-            );
+            setStatusMessage("Your account has been created. Sign in to continue.");
+            setStatusKind("success");
+            toast.success("Your WedPlan account was created.");
+            router.replace("/sign-in?registered=1");
         } catch {
             setStatusMessage(
                 "We couldn't reach the account service. Check your connection and try again.",
@@ -422,30 +416,12 @@ export default function GetStartedPage() {
                             <p>{statusMessage}</p>
                             {statusKind === "success" && (
                                 <div className="mt-2">
-                                    {hasActiveSession && createdRole === "customer" && (
-                                        <Link
-                                            href="/services"
-                                            className="font-semibold text-primary underline-offset-4 hover:underline"
-                                        >
-                                            Explore services
-                                        </Link>
-                                    )}
-                                    {hasActiveSession && createdRole === "vendor" && (
-                                        <Link
-                                            href="/for-vendors"
-                                            className="font-semibold text-primary underline-offset-4 hover:underline"
-                                        >
-                                            Learn about vendor onboarding
-                                        </Link>
-                                    )}
-                                    {!hasActiveSession && (
-                                        <Link
-                                            href="/sign-in"
-                                            className="font-semibold text-primary underline-offset-4 hover:underline"
-                                        >
-                                            Sign in
-                                        </Link>
-                                    )}
+                                    <Link
+                                        href="/sign-in"
+                                        className="font-semibold text-primary underline-offset-4 hover:underline"
+                                    >
+                                        Sign in
+                                    </Link>
                                 </div>
                             )}
                         </div>

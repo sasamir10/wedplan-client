@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Button } from "@heroui/react";
 import { authClient } from "@/lib/auth-client";
 import {
     DashboardSidebar,
@@ -20,6 +21,7 @@ export function DashboardLayout({ children, role }: DashboardLayoutProps) {
         data: sessionData,
         isPending: isSessionPending,
         error: sessionError,
+        refetch: refetchSession,
     } = authClient.useSession();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -54,11 +56,34 @@ export function DashboardLayout({ children, role }: DashboardLayoutProps) {
         );
     }
 
+    if (sessionError) {
+        return (
+            <div className="page-shell flex min-h-[60vh] flex-col items-center justify-center gap-4 py-16">
+                <p className="text-sm text-muted" role="alert">
+                    We couldn’t verify your session. Your dashboard is hidden until it can be checked.
+                </p>
+                <Button onClick={() => void refetchSession()} variant="outline">
+                    Try again
+                </Button>
+            </div>
+        );
+    }
+
     if (!sessionData?.user) {
         return (
             <div className="page-shell flex min-h-[60vh] items-center justify-center py-16">
                 <p className="text-sm text-muted" role="status">
                     Redirecting to sign in…
+                </p>
+            </div>
+        );
+    }
+
+    if (sessionData.user.role !== role || sessionData.user.isBlocked) {
+        return (
+            <div className="page-shell flex min-h-[60vh] items-center justify-center py-16">
+                <p className="text-sm text-muted" role="status">
+                    Redirecting to a public page…
                 </p>
             </div>
         );

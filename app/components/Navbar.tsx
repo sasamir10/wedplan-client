@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Button, ToastProvider, toast } from "@heroui/react";
 import { authClient } from "@/lib/auth-client";
+import { dashboardPathForRole, isWedPlanRole } from "@/lib/auth-navigation";
 
 const publicNavigationLinks = [
     { href: "/", label: "Home" },
@@ -38,9 +39,14 @@ export function Navbar() {
     const {
         data: sessionData,
         isPending: isSessionPending,
+        error: sessionError,
+        refetch: refetchSession,
     } = authClient.useSession();
-    const role = sessionData?.user?.role;
-    const isAuthenticated = Boolean(sessionData?.user);
+    const role =
+        !isSessionPending && !sessionError ? sessionData?.user?.role : undefined;
+    const isAuthenticated =
+        Boolean(sessionData?.user) && !isSessionPending && !sessionError;
+    const dashboardHref = isWedPlanRole(role) ? dashboardPathForRole(role) : null;
 
     useEffect(() => {
         if (!isMobileMenuOpen) {
@@ -142,7 +148,32 @@ export function Navbar() {
                 </nav>
 
                 <div className="hidden shrink-0 items-center gap-3 lg:flex">
-                    {isAuthenticated && !isSessionPending ? (
+                    {isSessionPending ? (
+                        <span className="text-sm text-muted" role="status">
+                            Checking session…
+                        </span>
+                    ) : sessionError ? (
+                        <Button
+                            onClick={() => void refetchSession()}
+                            size="sm"
+                            variant="outline"
+                            className={actionLinkClassName}
+                        >
+                            Retry session
+                        </Button>
+                    ) : isAuthenticated ? (
+                        <>
+                            {dashboardHref && (
+                                <Link
+                                    className={`${actionLinkClassName} text-foreground hover:bg-surface-secondary`}
+                                    href={dashboardHref}
+                                >
+                                    Dashboard
+                                </Link>
+                            )}
+                            <span className="hidden max-w-44 truncate text-sm text-muted xl:block" title={sessionData?.user.email}>
+                                {sessionData?.user.name || sessionData?.user.email}
+                            </span>
                         <Button
                             onClick={handleSignOut}
                             isDisabled={isLoggingOut}
@@ -153,6 +184,7 @@ export function Navbar() {
                         >
                             {isLoggingOut ? "Signing out…" : "Logout"}
                         </Button>
+                        </>
                     ) : (
                         <>
                             <Link
@@ -221,7 +253,29 @@ export function Navbar() {
                 >
                     {renderNavigationLinks(true)}
                     <div className="mt-2 grid grid-cols-2 gap-3 border-t border-border pt-4">
-                        {isAuthenticated && !isSessionPending ? (
+                        {isSessionPending ? (
+                            <span className="col-span-2 py-2 text-center text-sm text-muted" role="status">
+                                Checking session…
+                            </span>
+                        ) : sessionError ? (
+                            <Button
+                                onClick={() => void refetchSession()}
+                                variant="outline"
+                                className={`${actionLinkClassName} col-span-2`}
+                            >
+                                Retry session
+                            </Button>
+                        ) : isAuthenticated ? (
+                            <>
+                                {dashboardHref && (
+                                    <Link
+                                        className={`${actionLinkClassName} border border-border text-foreground hover:bg-surface-secondary col-span-2`}
+                                        href={dashboardHref}
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                    >
+                                        Dashboard
+                                    </Link>
+                                )}
                             <button
                                 onClick={handleSignOut}
                                 disabled={isLoggingOut}
@@ -229,6 +283,7 @@ export function Navbar() {
                             >
                                 {isLoggingOut ? "Signing out…" : "Logout"}
                             </button>
+                            </>
                         ) : (
                             <>
                                 <Link
